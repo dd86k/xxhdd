@@ -17,23 +17,34 @@ stages:
 
 #----------------------------------------------------------------------
 
-lint program:
+lint library:
   tags:
     - gitlabdocker
   stage: lint
-  allow_failure: true
+  allow_failure: false
   script:
     - echo "linting $CI_COMMIT_REF_NAME / $CI_COMMIT_SHA ..."
     - dub lint
 
+lint demo:
+  tags:
+    - gitlabdocker
+  stage: lint
+  allow_failure: false
+  script:
+    - echo "linting $CI_COMMIT_REF_NAME / $CI_COMMIT_SHA ..."
+    - cd demo/xxhash3-demo && dub lint
+
 #----------------------------------------------------------------------
 
-build program:
+build library:
   tags:
     - gitlabdocker
   stage: build
   script:
     - dub build
+    - dub build -b release
+    - dub build -b release --compiler=ldc2
   artifacts:
     name: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
     paths:
@@ -48,6 +59,7 @@ test program:
   script:
     - apt update && apt install -y liblmdb-dev
     - dub test
+    - dub test --compiler=ldc2
   artifacts:
     name: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
     paths:
