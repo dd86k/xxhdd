@@ -21,7 +21,7 @@ lint library:
   tags:
     - gitlabdocker
   stage: lint
-  allow_failure: false
+  allow_failure: true
   script:
     - echo "linting $CI_COMMIT_REF_NAME / $CI_COMMIT_SHA ..."
     - dub lint
@@ -30,7 +30,7 @@ lint demo:
   tags:
     - gitlabdocker
   stage: lint
-  allow_failure: false
+  allow_failure: true
   script:
     - echo "linting $CI_COMMIT_REF_NAME / $CI_COMMIT_SHA ..."
     - cd demo/xxhash3-demo && dub lint
