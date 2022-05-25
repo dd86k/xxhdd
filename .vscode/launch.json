@@ -1,0 +1,35 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Launch",
+            "program": "${workspaceFolder}/docs/xxhash3-demo/xxhash3-demo",
+            "args": [ "-v" ],
+            "cwd": "${workspaceFolder}/docs/xxhash3-demo/",
+            "preLaunchTask": "build-demo"
+        },
+        {
+            "type": "gdb",
+            "request": "launch",
+            "name": "Launch Demo Program (gdb)",
+            "target": "./xxhash3-demo",
+            "cwd": "${workspaceRoot}/docs/xxhash3-demo/",
+            "preLaunchTask": "build-demo",
+            "arguments": "-v"
+        },
+        {
+            "name": "Launch Demo Program (lldb)",
+            "type": "lldb-mi",
+            "request": "launch",
+            "target": "./lmdb-d",
+            "preLaunchTask": "build-demo",
+            "cwd": "${workspaceRoot}/docs/xxhash3-demo/",
+            "arguments": "-v"
+        }
+    ]
+}

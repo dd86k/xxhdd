@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/xxhash3
+xxhash3.so
+xxhash3.dylib
+xxhash3.dll
+xxhash3.a
+xxhash3.lib
+xxhash3-test-*
+lib*.a
+*.exe
+*.o
+*.obj
+*.lst
