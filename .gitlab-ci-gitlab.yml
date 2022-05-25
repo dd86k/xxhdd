@@ -1,0 +1,90 @@
+
+image: gitlab.vahanus.net:5050/vahanus/public/container-ubuntu-dlang-dev:latest
+
+variables:
+  GIT_SUBMODULE_STRATEGY: normal
+
+before_script:
+  - echo "Working on $CI_COMMIT_REF_NAME / $CI_COMMIT_SHA ..."
+  - if command -v docker ; then echo "${CI_REGISTRY_PASSWORD}" | docker login -u "${CI_REGISTRY_USER}" --password-stdin "${CI_REGISTRY_IMAGE}" ; fi
+
+stages:
+  - lint
+  - build
+  - test
+  - docs
+  - deploy
+
+#----------------------------------------------------------------------
+
+lint library:
+  #tags:
+  #  - gitlabdocker
+  stage: lint
+  allow_failure: true
+  script:
+    - echo "linting $CI_COMMIT_REF_NAME / $CI_COMMIT_SHA ..."
+    - dub lint
+
+lint demo:
+  #tags:
+  #  - gitlabdocker
+  stage: lint
+  allow_failure: true
+  script:
+    - echo "linting $CI_COMMIT_REF_NAME / $CI_COMMIT_SHA ..."
+    - cd demo/xxhash3-demo && dub lint
+
+#----------------------------------------------------------------------
+
+build library:
+  #tags:
+  #  - gitlabdocker
+  stage: build
+  script:
+    - dub build
+    - dub build -b release
+    - dub build -b release --compiler=ldc2
+  artifacts:
+    name: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
+    paths:
+      - liblmdb_d.a
+
+#----------------------------------------------------------------------
+
+test program:
+  #tags:
+  #  - gitlabdocker
+  stage: test
+  script:
+    - apt update && apt install -y liblmdb-dev
+    - dub test
+    - dub test --compiler=ldc2
+  artifacts:
+    name: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
+    paths:
+      - lmdb_d-test-library
+
+#----------------------------------------------------------------------
+
+build docs:
+  #tags:
+  #  - gitlabdocker
+  stage: docs
+  script:
+    - dub build -b ddox
+  artifacts:
+    name: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
+    untracked: true
+    paths:
+      - docs/
+
+#----------------------------------------------------------------------
+
+.deploy program:
+  #tags:
+  #  - gitlabdocker
+  stage: deploy
+  script:
+    - echo "Setup a Vahanus artifactory first!"
+  when: manual
