@@ -1,23 +1,33 @@
 
-image: gitlab.vahanus.net:5050/vahanus/public/container-ubuntu-dlang-dev:latest
 
 variables:
   GIT_SUBMODULE_STRATEGY: normal
-
-before_script:
-  - echo "Working on $CI_COMMIT_REF_NAME / $CI_COMMIT_SHA ..."
-  - if command -v docker ; then echo "${CI_REGISTRY_PASSWORD}" | docker login -u "${CI_REGISTRY_USER}" --password-stdin "${CI_REGISTRY_IMAGE}" ; fi
 
 stages:
   - lint
   - build
   - test
-  - docs
   - deploy
+
+default:
+  image: gitlab.vahanus.net:5050/vahanus/public/container-ubuntu-dlang-dev:latest
+  #image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  before_script:
+    - command -v docker && docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY || true
+    - command -v docker && docker info || true
+    - printenv | sort
+    - ls -al
+  after_script:
+    - if test -e lastbuild.log ; then tail -n 60 lastbuild.log ; fi
+    - ls -al
+
+variables:
+  #-- Workaround bug: https://gitlab.com/gitlab-org/gitlab-runner/issues/4501
+  DOCKER_TLS_CERTDIR: ""
 
 #----------------------------------------------------------------------
 
-lint library:
+lint source:
   #tags:
   #  - gitlabdocker
   stage: lint
@@ -48,7 +58,7 @@ build library:
   artifacts:
     name: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
     paths:
-      - liblmdb_d.a
+      - libxxhash3.a
 
 #----------------------------------------------------------------------
 
@@ -57,13 +67,12 @@ test program:
   #  - gitlabdocker
   stage: test
   script:
-    - apt update && apt install -y liblmdb-dev
     - dub test
     - dub test --compiler=ldc2
   artifacts:
     name: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
     paths:
-      - lmdb_d-test-library
+      - xxhash3-test-library
 
 #----------------------------------------------------------------------
 
@@ -81,10 +90,10 @@ build docs:
 
 #----------------------------------------------------------------------
 
-.deploy program:
+deploy program:
   #tags:
   #  - gitlabdocker
   stage: deploy
   script:
-    - echo "Setup a Vahanus artifactory first!"
+    - echo "Deploy!"
   when: manual
