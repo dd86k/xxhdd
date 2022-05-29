@@ -14,10 +14,33 @@ D implementation of the xxhash library 0.81 including xxh32, xxh64, xxh3_64 and 
 ```
 import xxhash3;      /* Import the D module into scope */
 ```
+**Template API:**
+```
+    ubyte[1024] data;
+    XXH_32 xxh;  // OR XXH_64, xxh3_64, xxh3_128
+    xxh.start();
+    xxh.put(data[]);
+    xxh.start(); //Start again
+    xxh.put(data[]);
+    auto hash = xxh.finish();
+```
+**OOP API:**
+```
+    auto xxh = new XXH32Digest();
+    ubyte[] hash = xxh.digest("abc");
+    assert(toHexString(hash) == "32D153FF", "Got " ~ toHexString(hash));
+
+    //Feeding data
+    ubyte[1024] data;
+    xxh.put(data[]);
+    xxh.reset(); //Start again
+    xxh.put(data[]);
+    hash = xxh.finish();
+```
 
 # Todos
 
-- Optimize code, cleanups
+- Optimize code, cleanups, speed imporovements
 - Expose more XXH API functions
 - Add support for secrets and seeds with XXH3
 
