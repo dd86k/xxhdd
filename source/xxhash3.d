@@ -67,7 +67,7 @@ version (Have128BitInteger)
 @safe unittest
 {
     //Template API
-    import std.digest.md;
+    import xxhash3 : XXH_32;
 
     //Feeding data
     ubyte[1024] data;
@@ -83,7 +83,7 @@ version (Have128BitInteger)
 @safe unittest
 {
     //OOP API
-    import std.digest.md;
+    import xxhash3 : XXH32Digest;
 
     auto xxh = new XXH32Digest();
     ubyte[] hash = xxh.digest("abc");
