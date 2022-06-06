@@ -2730,7 +2730,6 @@ public:
           */
     ubyte[digestSize / 8] finish() @trusted nothrow @nogc
     {
-        XXH_errorcode ec;
         static if (digestSize == 32)
         {
             hash = xxh32_digest(&state);
@@ -2754,7 +2753,6 @@ public:
             rc.low64 = nativeToBigEndian(hash.high64);
             rc.high64 = nativeToBigEndian(hash.low64);
         }
-        assert(ec == XXH_errorcode.XXH_OK, "freestate failed");
 
         return (cast(ubyte*)&rc)[0 .. rc.sizeof];
     }
