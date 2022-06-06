@@ -783,7 +783,7 @@ do
     len &= 31;
     while (len >= 8)
     {
-        ulong k1 = xxh64_round(0, xxh_get64bits(ptr, align_));
+        const ulong k1 = xxh64_round(0, xxh_get64bits(ptr, align_));
         ptr += 8;
         hash ^= k1;
         hash = rol(hash, 27) * XXH_PRIME64_1 + XXH_PRIME64_4;
@@ -1522,8 +1522,8 @@ private void xxh3_initCustomSecret_scalar(void* customSecret, ulong seed64)
              * loads together for free. Putting the loads together before the stores
              * properly generates LDP.
              */
-            ulong lo = xxh_readLE64(kSecretPtr + 16 * i) + seed64;
-            ulong hi = xxh_readLE64(kSecretPtr + 16 * i + 8) - seed64;
+            const ulong lo = xxh_readLE64(kSecretPtr + 16 * i) + seed64;
+            const ulong hi = xxh_readLE64(kSecretPtr + 16 * i + 8) - seed64;
             xxh_writeLE64(cast(ubyte*) customSecret + 16 * i, lo);
             xxh_writeLE64(cast(ubyte*) customSecret + 16 * i + 8, hi);
         }
@@ -2733,17 +2733,17 @@ public:
         static if (digestSize == 32)
         {
             hash = xxh32_digest(&state);
-            auto rc = nativeToBigEndian(hash);
+            const auto rc = nativeToBigEndian(hash);
         }
         else static if (digestSize == 64 && !useXXH3)
         {
             hash = xxh64_digest(&state);
-            auto rc = nativeToBigEndian(hash);
+            const auto rc = nativeToBigEndian(hash);
         }
         else static if (digestSize == 64 && useXXH3)
         {
             hash = xxh3_64bits_digest(&state);
-            auto rc = nativeToBigEndian(hash);
+            const auto rc = nativeToBigEndian(hash);
         }
         else static if (digestSize == 128)
         {
