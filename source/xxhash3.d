@@ -130,6 +130,7 @@ class XXHException : Exception
 
 alias XXH32_hash_t = uint;
 alias XXH64_hash_t = ulong;
+/** Storage for 128bit hash digest */
 align(16) struct XXH128_hash_t
 {
     XXH64_hash_t low64; /** `value & 0xFFFFFFFFFFFFFFFF` */
@@ -143,10 +144,9 @@ static assert(XXH64_hash_t.sizeof == 8, "64bit integers should be 8 bytes?");
 alias XXH128_canonical_t = ubyte[XXH128_hash_t.sizeof];
 static assert(XXH128_hash_t.sizeof == 16, "128bit integers should be 16 bytes?");
 
-
-enum XXH_VERSION_MAJOR = 0;
-enum XXH_VERSION_MINOR = 8;
-enum XXH_VERSION_RELEASE = 1;
+enum XXH_VERSION_MAJOR = 0; /** XXHASH Major version */
+enum XXH_VERSION_MINOR = 8; /** XXHASH Minor version */
+enum XXH_VERSION_RELEASE = 1; /** XXHASH Build/Release version */
 
 /** Version number, encoded as two digits each */
 enum XXH_VERSION_NUMBER =
@@ -165,13 +165,14 @@ uint xxh_versionNumber() @safe pure nothrow @nogc
     assert(XXH_VERSION_NUMBER == xxh_versionNumber(), "Version mismatch");
 }
 
+/** The error code of public API functions */
 enum XXH_errorcode
 {
     XXH_OK = 0, /** OK */
     XXH_ERROR /** Error */
 }
 
-/* Structure for XXH32 streaming API.
+/** Structure for XXH32 streaming API.
  *
  * See: XXH64_state_s, XXH3_state_s
  */
