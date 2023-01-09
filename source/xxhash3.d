@@ -1807,7 +1807,7 @@ private void XXH3_INITSTATE(XXH3_state_t* XXH3_state_ptr)
 }
 
 private void xxh3_reset_internal(
-    XXH3_state_t* statePtr, XXH64_hash_t seed, const void* secret, size_t secretSize)
+    scope XXH3_state_t* statePtr, XXH64_hash_t seed, const void* secret, size_t secretSize)
     @trusted pure nothrow @nogc
 in
 {
@@ -1836,7 +1836,7 @@ in(secretSize >= XXH3_SECRET_SIZE_MIN, "secretSize < XXH3_SECRET_SIZE_MIN")
 }
 
 /* XXH PUBLIC API - hidden in D module */ private
-XXH_errorcode xxh3_64bits_reset(XXH3_state_t* statePtr)
+XXH_errorcode xxh3_64bits_reset(scope XXH3_state_t* statePtr)
     @safe pure nothrow @nogc
 {
     if (statePtr == null)
@@ -1926,7 +1926,7 @@ enum XXH3_STREAM_USE_STACK = 1;
  * Both xxh3_64bits_update and xxh3_128bits_update use this routine.
  */
 private XXH_errorcode xxh3_update(
-    XXH3_state_t* state, scope const(ubyte)* input, size_t len,
+    scope XXH3_state_t* state, scope const(ubyte)* input, size_t len,
     XXH3_f_accumulate_512 f_acc512, XXH3_f_scrambleAcc f_scramble)
     @trusted pure nothrow @nogc
 in(state != null, "state == null")
@@ -2066,7 +2066,7 @@ do
 }
 
 /* XXH PUBLIC API - hidden in D module */
-private XXH_errorcode xxh3_64bits_update(XXH3_state_t* state, scope const(void)* input, size_t len)
+private XXH_errorcode xxh3_64bits_update(scope XXH3_state_t* state, scope const(void)* input, size_t len)
     @safe pure nothrow @nogc
 {
     return xxh3_update(state, cast(const(ubyte)*) input, len,
@@ -2542,7 +2542,7 @@ private XXH128_hash_t XXH128(const void* input, size_t len, XXH64_hash_t seed)
 }
 
 /* XXH PUBLIC API - hidden in D module */
-private XXH_errorcode xxh3_128bits_reset(XXH3_state_t* statePtr)
+private XXH_errorcode xxh3_128bits_reset(scope XXH3_state_t* statePtr)
     @safe pure nothrow @nogc
 {
     return xxh3_64bits_reset(statePtr);
@@ -2574,7 +2574,7 @@ XXH_errorcode xxh3_128bits_reset_withSecretandSeed(
 
 /* XXH PUBLIC API - hidden in D module */ private
 XXH_errorcode xxh3_128bits_update(
-    XXH3_state_t* state, scope const void* input, size_t len)
+    scope XXH3_state_t* state, scope const void* input, size_t len)
     @safe pure nothrow @nogc
 {
     return xxh3_update(state, cast(const ubyte*) input, len,
