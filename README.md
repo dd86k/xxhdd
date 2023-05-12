@@ -20,7 +20,8 @@ D implementation of the xxhash library 0.81 including xxh32, xxh64, xxh3_64 and 
 ```
 import xxhash3;      /* Import the D module into scope */
 ```
-**Template API:**
+
+## Template API
 ```d
 ubyte[1024] data;
 XXH_32 xxh;  // OR XXH_64, xxh3_64, xxh3_128
@@ -30,7 +31,8 @@ xxh.start(); //Start again
 xxh.put(data[]);
 auto hash = xxh.finish();
 ```
-**OOP API:**
+
+## OOP API
 ```d
 auto xxh = new XXH32Digest();
 ubyte[] hash = xxh.digest("abc");
