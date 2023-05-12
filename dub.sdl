@@ -1,6 +1,6 @@
 name "xxhdd"
-description "D implementation of the xxhash library 0.81 including xxh32, xxh64, xxh3_64 and xxh3_128 hashes."
-authors "Carsten Schlote" "Yann Collet"
+description "D implementation of xxhash3"
+authors "Carsten Schlote" "Yann Collet" "dd <dd@dax.moe>"
 copyright "Copyright © 2022, Carsten Schlote"
 license "Boost"
 targetType "library"
