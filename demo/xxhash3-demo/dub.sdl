@@ -1,0 +1,6 @@
+name "xxhash3-demo"
+description "Some example code for xxhash3."
+authors "Carsten Schlote"
+copyright "Created © 2022, Carsten Schlote"
+license "Public Domain"
+dependency "xxhash3" version="~>0.0.1"
