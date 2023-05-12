@@ -14,3 +14,5 @@ lib*.a
 *.o
 *.obj
 *.lst
+*.lib
+*.pdb
