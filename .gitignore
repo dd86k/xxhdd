@@ -16,3 +16,4 @@ lib*.a
 *.lst
 *.lib
 *.pdb
+dub.selections.json
