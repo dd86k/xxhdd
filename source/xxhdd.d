@@ -43,8 +43,7 @@ $(TR $(TDNW Helpers) $(TD $(MYREF xxh32Of))
  */
 
 /* xxh.d - A wrapper for the original C implementation */
-//module std.digest.xxh;
-module xxhash3;
+module xxhdd;
 
 version (X86)
     version = HaveUnalignedLoads;
