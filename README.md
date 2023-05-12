@@ -1,6 +1,10 @@
-# xxhash3
+# xxhdd
 
 D implementation of the xxhash library 0.81 including xxh32, xxh64, xxh3_64 and xxh3_128 hashes.
+
+## Changes from xxhash3
+
+- Fix range violations with XXH3_64Digest and XXH3_128Digest
 
 # Prerequisites
 

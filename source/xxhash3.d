@@ -2099,7 +2099,7 @@ private void xxh3_digest_long(XXH64_hash_t* acc, const XXH3_state_t* state, cons
         (cast(ubyte*) &lastStripe[0]) [0 .. catchupSize] =
             (cast(ubyte*) &state.buffer[0]) [state.buffer.sizeof - catchupSize .. state.buffer.sizeof];
         (cast(ubyte*) &lastStripe[0]) [catchupSize .. catchupSize + state.bufferedSize] =
-            (cast(ubyte*) &state.buffer[0]) [0 .. state.buffer.sizeof];
+            (cast(ubyte*) &state.buffer[0]) [0 .. state.bufferedSize];
         xxh3_accumulate_512(&acc[0], &lastStripe[0], &secret[0] + state.secretLimit - XXH_SECRET_LASTACC_START);
     }
 }
@@ -3330,4 +3330,32 @@ alias XXH3_128Digest = WrapperDigest!XXH3_128; ///ditto
             "1234567890123456789012345678901234567890") == cast(ubyte[]) hexString!"7F58AA2520C681F9");
     assert(xxh128.digest("1234567890123456789012345678901234567890",
             "1234567890123456789012345678901234567890") == cast(ubyte[]) hexString!"08DD22C3DDC34CE640CB8D6AC672DCB8");
+}
+
+// Some left-over buffer in xxh3_digest_long was throwing a RangeViolation
+unittest
+{
+    import std.conv : hexString;
+
+    auto xxh = new XXH32Digest();
+    auto xxh64 = new XXH64Digest();
+    auto xxh3_64 = new XXH3_64Digest();
+    auto xxh3_128 = new XXH3_128Digest();
+    
+    ubyte[] license = new ubyte[7047]; // Length of LICENSE (example file)
+    license[] = 'a';
+    
+    xxh.put(license);
+    xxh64.put(license);
+    xxh3_64.put(license);
+    xxh3_128.put(license);
+
+    assert(xxh.finish() ==
+        cast(ubyte[]) hexString!"40BD93E5");
+    assert(xxh64.finish() ==
+        cast(ubyte[]) hexString!"4E463476AA3FA339");
+    assert(xxh3_64.finish() ==
+        cast(ubyte[]) hexString!"6FE65AA1263B5039");
+    assert(xxh3_128.finish() ==
+        cast(ubyte[]) hexString!"35232F8919961F9B6FE65AA1263B5039");
 }
