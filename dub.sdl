@@ -4,3 +4,5 @@ authors "Carsten Schlote" "Yann Collet"
 copyright "Copyright © 2022, Carsten Schlote"
 license "BSD 2-Clause License"
 targetType "library"
+
+subPackage "demo"

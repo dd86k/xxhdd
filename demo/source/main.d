@@ -1,11 +1,11 @@
 /* xxhash3 test executable */
-import core.stdc.string;
+module demo;
 
 import std.stdio;
 import std.datetime.stopwatch;
 
 /* Import the binding modules into scope */
-import xxhash3;
+import xxhdd;
 
 /** Minimalistic demo code for lmdb
  * Param: args = Commandline args as a dynamic array of strings
@@ -19,10 +19,10 @@ void main(const string[] args)
 	writefln("The xxhash3 package implements version %d of upstream C library", xxhashVersion);
 
 	/* Run some demo code */
-	test_xxhash!(XXH_32, XXH32Digest, XXH32_canonical_t)();
-	test_xxhash!(XXH_64, XXH64Digest, XXH64_canonical_t)();
-	test_xxhash!(XXH3_64, XXH3_64Digest, XXH64_canonical_t)();
-	test_xxhash!(XXH3_128, XXH3_128Digest, XXH128_canonical_t)();
+	test_xxhash!(XXH_32, XXH32Digest, XXH32_canonical_t)("xxh-32");
+	test_xxhash!(XXH_64, XXH64Digest, XXH64_canonical_t)("xxh-64");
+	test_xxhash!(XXH3_64, XXH3_64Digest, XXH64_canonical_t)("xxh3-64");
+	test_xxhash!(XXH3_128, XXH3_128Digest, XXH128_canonical_t)("xxh3-128");
 }
 
 /** Shorthand for 2^^20 bytes */
@@ -79,10 +79,10 @@ unittest
 }
 
 /** Test XXH32 code */
-void test_xxhash(TT, OOT, HASH)()
+void test_xxhash(TT, OOT, HASH)(string name)
 {
 	auto test = new ubyte[4 * 1024 * 1024];
-	auto sw = StopWatch(AutoStart.no);
+	scope sw = StopWatch(AutoStart.no);
 
 	// Hash the file in chunks
 	HASH hash1;
@@ -99,22 +99,25 @@ void test_xxhash(TT, OOT, HASH)()
 		sw.stop;
 	}
 	auto time1 = sw.peek;
-	writefln("%58.55s: Testsize %10d bytes, took %10.6s. %14.7f MB/s",
-		TT.stringof, test.length,
+	writefln("%10s: %9d bytes took %10.6s s at %13.7f MB/s",
+		name, test.length,
 		getFloatSecond(time1),
 		getMegaBytePerSeconds(test.length, time1));
-
-	HASH hash3;
+	
+	version (none)
 	{
-		auto xxh = new OOT();
-		sw.reset;
-		sw.start;
-		hash3 = xxh.digest(test); //&test[0], test.length, 0xbaad5eed);
-		sw.stop;
+		HASH hash3;
+		{
+			auto xxh = new OOT();
+			sw.reset;
+			sw.start;
+			hash3 = xxh.digest(test); //&test[0], test.length, 0xbaad5eed);
+			sw.stop;
+		}
+		auto time2 = sw.peek;
+		writefln("%20s: %10d Bytes, took %10.6s at %13.7f MB/s",
+			OOT.stringof, test.length,
+			getFloatSecond(time1),
+			getMegaBytePerSeconds(test.length, time1));
 	}
-	auto time2 = sw.peek;
-	writefln("%58.55s: Testsize %10d bytes, took %10.6s. %14.7f MB/s",
-		OOT.stringof, test.length,
-		getFloatSecond(time1),
-		getMegaBytePerSeconds(test.length, time1));
 }
