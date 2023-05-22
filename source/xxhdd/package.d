@@ -45,6 +45,22 @@ $(TR $(TDNW Helpers) $(TD $(MYREF xxh32Of))
 /* xxh.d - A wrapper for the original C implementation */
 module xxhdd;
 
+public import std.digest;
+import core.bitop : rol, bswap;
+// NOTE: object.d is automatically imported.
+
+//
+// Settings
+//
+
+enum XXH_NO_STREAM = false;
+enum XXH_SIZE_OPT = 0;
+enum XXH_FORCE_ALIGN_CHECK = true;
+enum XXH32_ENDJMP = false;
+
+//TODO: Get rid of this
+//      Even if x86 has unaligned loads, aligned loads are much faster
+//      By removing this, we reduce dev burden
 version (X86)
     version = HaveUnalignedLoads;
 else version (X86_64)
@@ -52,11 +68,9 @@ else version (X86_64)
 
 //TODO: Properly detect this requirement.
 //version = CheckACCAlignment;
-
-//TODO: Check, if this code is an advantage over XXH provided code
-//      The code from core.int128 doesn't inline.
 //version = Have128BitInteger;
 
+//TODO: Replace core.int128 usage by core.simd
 version (Have128BitInteger)
 {
     import core.int128;
@@ -65,9 +79,6 @@ version (Have128BitInteger)
 ///
 @safe unittest
 {
-    //Template API
-    import xxhash3 : XXH_32;
-
     //Feeding data
     ubyte[1024] data;
     XXH_32 xxh;
@@ -75,52 +86,24 @@ version (Have128BitInteger)
     xxh.put(data[]);
     xxh.start(); //Start again
     xxh.put(data[]);
-    auto hash = xxh.finish();
+    ubyte[4] hash = xxh.finish();
 }
 
 ///
 @safe unittest
 {
-    //OOP API
-    import xxhash3 : XXH32Digest;
-
-    auto xxh = new XXH32Digest();
+    XXH32Digest xxh = new XXH32Digest();
     ubyte[] hash = xxh.digest("abc");
-    assert(toHexString(hash) == "32D153FF", "Got " ~ toHexString(hash));
+    string hex = toHexString(hash);
+    assert(hex == "32D153FF", "Got " ~ hex);
 
-    //Feeding data
+    // Feeding data
     ubyte[1024] data;
     xxh.put(data[]);
-    xxh.reset(); //Start again
+    xxh.reset(); // Start again
     xxh.put(data[]);
-    hash = xxh.finish();
-}
-
-public import std.digest;
-
-/* --- Port of C sources (release 0.8.1) to D language below ---------------- */
-
-enum XXH_NO_STREAM = false;
-enum XXH_SIZE_OPT = 0;
-enum XXH_FORCE_ALIGN_CHECK = true;
-enum XXH32_ENDJMP = false;
-
-private import core.bitop : rol, bswap;
-private import std.exception : enforce;
-private import object : Exception;
-
-/** Thrown on XXH errors. */
-class XXHException : Exception
-{
-    import std.exception : basicExceptionCtors;
-    ///
-    mixin basicExceptionCtors;
-}
-///
-@safe unittest
-{
-    import std.exception : enforce, assertThrown;
-    assertThrown(enforce!XXHException(false, "Throw me..."));
+    // NOTE: 
+    ubyte[4] hash2 = xxh.finish();
 }
 
 /* *************************************
@@ -143,15 +126,26 @@ static assert(XXH64_hash_t.sizeof == 8, "64bit integers should be 8 bytes?");
 alias XXH128_canonical_t = ubyte[XXH128_hash_t.sizeof];
 static assert(XXH128_hash_t.sizeof == 16, "128bit integers should be 16 bytes?");
 
-enum XXH_VERSION_MAJOR = 0; /** XXHASH Major version */
-enum XXH_VERSION_MINOR = 8; /** XXHASH Minor version */
-enum XXH_VERSION_RELEASE = 1; /** XXHASH Build/Release version */
+// NOTE: Good idea to keep upstream version in case it's getting new features
+enum XXH_VERSION_MAJOR = 0;     /// Upstream XXHASH Major version
+enum XXH_VERSION_MINOR = 8;     /// Upstream XXHASH Minor version
+enum XXH_VERSION_RELEASE = 1;   /// Upstream XXHASH Build/Release version
 
-/** Version number, encoded as two digits each */
+enum XXHDD_VERSION_MAJOR = 0;     /// XXHDD Major version
+enum XXHDD_VERSION_MINOR = 0;     /// XXHDD Minor version
+enum XXHDD_VERSION_RELEASE = 5;   /// XXHDD Fix version
+
+/// Upstream version number, coded as BCDs.
 enum XXH_VERSION_NUMBER =
-    (XXH_VERSION_MAJOR * 100 * 100 +
-     XXH_VERSION_MINOR * 100 +
-     XXH_VERSION_RELEASE);
+    XXH_VERSION_MAJOR * 100 * 100 +
+    XXH_VERSION_MINOR * 100 +
+    XXH_VERSION_RELEASE;
+
+/// XXHDD version number, coded as BCDs.
+enum XXHDD_VERSION_NUMBER =
+    XXHDD_VERSION_MAJOR * 100 * 100 +
+    XXHDD_VERSION_MINOR * 100 +
+    XXHDD_VERSION_RELEASE;
 
 /** Get version number */
 uint xxh_versionNumber() @safe pure nothrow @nogc
@@ -162,6 +156,12 @@ uint xxh_versionNumber() @safe pure nothrow @nogc
 @safe unittest
 {
     assert(XXH_VERSION_NUMBER == xxh_versionNumber(), "Version mismatch");
+}
+
+/** Get version number */
+uint xxhdd_versionNumber() @safe pure nothrow @nogc
+{
+    return XXH_VERSION_NUMBER;
 }
 
 /** The error code of public API functions */
@@ -2606,12 +2606,6 @@ XXH128_hash_t xxh3_128bits_digest(const XXH3_state_t* state)
     return xxh3_128bits_withSecret(&state.buffer[0],
             cast(size_t)(state.totalLen), secret, state.secretLimit + XXH_STRIPE_LEN);
 }
-
-/* ----------------------------------------------------------------------------------------*/
-
-import core.bitop;
-
-public import std.digest;
 
 /*
  * Helper methods for encoding the buffer.
