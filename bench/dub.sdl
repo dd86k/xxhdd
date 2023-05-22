@@ -1,4 +1,4 @@
-name "demo"
+name "bench"
 description "Some example code for xxhdd."
 authors "Carsten Schlote" "dd <dd@dax.moe>"
 copyright "Created © 2022, Carsten Schlote"

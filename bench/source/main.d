@@ -1,22 +1,14 @@
 /* xxhash3 test executable */
-module demo;
+module bench;
 
 import std.stdio;
 import std.datetime.stopwatch;
-
-/* Import the binding modules into scope */
 import xxhdd;
 
-/** Minimalistic demo code for lmdb
- * Param: args = Commandline args as a dynamic array of strings
- */
 void main(const string[] args)
 {
-	writefln("xxhash3 demo, compiled on %s", __DATE__);
-
-	/* Extract the lmdb version */
-	auto xxhashVersion = xxh_versionNumber();
-	writefln("The xxhash3 package implements version %d of upstream C library", xxhashVersion);
+	writeln("xxhash3 demo, compiled on " ~ __DATE__);
+	writefln("xxhash3 v%d upstream C library", xxh_versionNumber);
 
 	/* Run some demo code */
 	test_xxhash!(XXH_32, XXH32Digest, XXH32_canonical_t)("xxh-32");
@@ -25,8 +17,10 @@ void main(const string[] args)
 	test_xxhash!(XXH3_128, XXH3_128Digest, XXH128_canonical_t)("xxh3-128");
 }
 
-/** Shorthand for 2^^20 bytes */
-enum mega = 1024 * 1024;
+/// Short for representing one megabyte (MiB).
+// Was named `mega`. There was another definition shadowing this one in
+// getMegaBytePerSeconds, so it's streamlined here.
+enum MiB = 1024 * 1024;
 
 /** Get duration as a float in seconds
  * Param: duration
@@ -59,36 +53,35 @@ unittest
  */
 float getMegaBytePerSeconds(size_t byteSize, Duration duration)
 {
-	enum mega = 2 ^^ 20;
 	const float second_duration = getFloatSecond(duration);
 	const float megaBytesPerSec = (byteSize != 0) ?
-		(float(byteSize) / mega) / float(second_duration) : float.nan;
+		(float(byteSize) / MiB) / float(second_duration) : float.nan;
 	return megaBytesPerSec;
 }
 
 unittest
 {
-	import std.math.operations;
+	import std.math.operations : isClose;
 
-	auto mbs = getMegaBytePerSeconds(150 * 2 ^^ 20, dur!"seconds"(1));
+	auto mbs = getMegaBytePerSeconds(150 * MiB, dur!"seconds"(1));
 	assert(isClose(mbs, 150.0));
-	mbs = getMegaBytePerSeconds(10 * 2 ^^ 20, dur!"msecs"(500));
+	mbs = getMegaBytePerSeconds(10 * MiB, dur!"msecs"(500));
 	assert(isClose(mbs, 20.0));
-	mbs = getMegaBytePerSeconds(10 * 2 ^^ 20, dur!"usecs"(500));
+	mbs = getMegaBytePerSeconds(10 * MiB, dur!"usecs"(500));
 	assert(isClose(mbs, 20_000.0));
 }
 
 /** Test XXH32 code */
 void test_xxhash(TT, OOT, HASH)(string name)
 {
-	auto test = new ubyte[4 * 1024 * 1024];
-	scope sw = StopWatch(AutoStart.no);
+	immutable static string LINE = "%10s: %9d bytes took %10.7s s at %13.7f MB/s";
+	scope test = new ubyte[4 * MiB];
+	StopWatch sw; // .init doesn't autostart
 
 	// Hash the file in chunks
 	HASH hash1;
 	{
 		TT xxh;
-		sw.reset;
 		sw.start;
 		xxh.start();
 		for (int j = 0; j < test.length; j += test.length / 8)
@@ -99,23 +92,24 @@ void test_xxhash(TT, OOT, HASH)(string name)
 		sw.stop;
 	}
 	auto time1 = sw.peek;
-	writefln("%10s: %9d bytes took %10.6s s at %13.7f MB/s",
+	writefln(LINE,
 		name, test.length,
 		getFloatSecond(time1),
 		getMegaBytePerSeconds(test.length, time1));
 	
+	// Template API and OOP API have the same results,
+	// so they are disabled for now.
 	version (none)
 	{
 		HASH hash3;
 		{
-			auto xxh = new OOT();
-			sw.reset;
+			OOT xxh = new OOT();
 			sw.start;
 			hash3 = xxh.digest(test); //&test[0], test.length, 0xbaad5eed);
 			sw.stop;
 		}
 		auto time2 = sw.peek;
-		writefln("%20s: %10d Bytes, took %10.6s at %13.7f MB/s",
+		writefln(LINE,
 			OOT.stringof, test.length,
 			getFloatSecond(time1),
 			getMegaBytePerSeconds(test.length, time1));
