@@ -2,7 +2,9 @@
 
 Implementation of the XXHash non-cryptographic hashing algorithm in D.
 
-Include xxh32, xxh64, xxh3-64, and xxh3-128.
+Includes xxh32, xxh64, xxh3-64, and xxh3-128.
+
+Originally forked from [carsten.schlote/xxhash3](https://gitlab.com/carsten.schlote/xxhash3/).
 
 ## Changes from xxhash3
 
