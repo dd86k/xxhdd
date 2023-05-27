@@ -9,29 +9,33 @@ Originally forked from [carsten.schlote/xxhash3](https://gitlab.com/carsten.schl
 ## Changes from xxhash3
 
 - Fix range violations with XXH3_64Digest and XXH3_128Digest
-- Name change to avoid package conflict
-- Update README
-- Clean demo and make it a subpackage
+- Change package name to xxhdd to avoid package conflict
+- Rework README
+- Clean demo and make it a subpackage named bench
 - Removed XXHException for being unused
 - Add own lib version
+- Make primes private
+- (WIP) Reworked whole structure template as XXHash
+  - (WIP) Definition is now pure and free of pointers
+  - Removed XXHTemplate, XXH_errorcode, and accessories
 
 ## TODOs
 
 - Bring all sub functions into the same structure template
-- Add seeding support
+- Add support for seeding in Template and OOP APIs
 
 # Usage
 
 ## Template API
 ```d
-XXH_32 xxh32;
+XXHash32 xxh32;
 xxh32.put("abc");
 assert(xxh32.finish() == cast(ubyte[])hexString!"32d153ff");
 ```
 
 ## OOP API
 ```d
-XXH32Digest xxh32 = new XXH32Digest();
+XXHash32Digest xxh32 = new XXHash32Digest();
 xxh32.put("abc");
 assert(xxh32.finish() == cast(ubyte[])hexString!"32d153ff");
 ```
