@@ -26,11 +26,9 @@ enum MiB = 1024 * 1024;
  * Param: duration
  * Returns: duration as float, unit seconds
  */
-float getFloatSecond(Duration duration)
+float getFloatSecond(Duration duration) pure
 {
-	const auto ns_duration = duration.total!"nsecs";
-	const float second_duration = float(ns_duration) / 10 ^^ 9;
-	return second_duration;
+	return (cast(float)duration.total!"nsecs") / (10 ^^ 9);
 }
 
 unittest
@@ -51,12 +49,9 @@ unittest
  * Returns:
  *   float Megabyte per second
  */
-float getMegaBytePerSeconds(size_t byteSize, Duration duration)
+float getMegaBytePerSeconds(size_t byteSize, Duration duration) pure
 {
-	const float second_duration = getFloatSecond(duration);
-	const float megaBytesPerSec = (byteSize != 0) ?
-		(float(byteSize) / MiB) / float(second_duration) : float.nan;
-	return megaBytesPerSec;
+	return (cast(float)(byteSize / MiB)) / getFloatSecond(duration);
 }
 
 unittest
@@ -74,7 +69,7 @@ unittest
 /** Test XXH32 code */
 void test_xxhash(TT, OOT, HASH)(string name)
 {
-	immutable static string LINE = "%10s: %9d bytes took %10.7s s at %13.7f MB/s";
+	immutable static string LINE = "%10s: %9d bytes took %10.7s s at %13.7f MiB/s";
 	scope test = new ubyte[4 * MiB];
 	StopWatch sw; // .init doesn't autostart
 
@@ -83,8 +78,8 @@ void test_xxhash(TT, OOT, HASH)(string name)
 	{
 		TT xxh;
 		sw.start;
-		xxh.start();
-		for (int j = 0; j < test.length; j += test.length / 8)
+		xxh.start(); //TODO: temp: fixes a bug for xxh3
+		for (size_t j; j < test.length; j += test.length / 8)
 		{
 			xxh.put(test[j .. j + test.length / 8]);
 		}
@@ -96,22 +91,4 @@ void test_xxhash(TT, OOT, HASH)(string name)
 		name, test.length,
 		getFloatSecond(time1),
 		getMegaBytePerSeconds(test.length, time1));
-	
-	// Template API and OOP API have the same results,
-	// so they are disabled for now.
-	version (none)
-	{
-		HASH hash3;
-		{
-			OOT xxh = new OOT();
-			sw.start;
-			hash3 = xxh.digest(test); //&test[0], test.length, 0xbaad5eed);
-			sw.stop;
-		}
-		auto time2 = sw.peek;
-		writefln(LINE,
-			OOT.stringof, test.length,
-			getFloatSecond(time1),
-			getMegaBytePerSeconds(test.length, time1));
-	}
 }
